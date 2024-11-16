@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.LinkedList;
 
 public class Client {
 
@@ -10,6 +11,9 @@ public class Client {
     private static BufferedWriter out;
 
     public static void main(String[] args) {
+        LinkedList<String> queue = new LinkedList<String>();
+        int bytesRead = 0;
+        String line;
         try {
             try {
                 clientSocket = new Socket("localhost", 4004);
@@ -20,12 +24,36 @@ public class Client {
 
                 System.out.println("Write something that send message: ");
 
-                String word = reader.readLine();
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("message ")) {
+                        String[] parts = line.split(" ",3);
+                        if (parts.length < 3) {
+                            System.out.println("Error format messages");
+                            continue;
+                        }
 
-                out.write(word);
+                        int messageLength;
+                        try {
+                            messageLength = Integer.parseInt(parts[1]);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Length of messages must be an INTEGER");
+                            continue;
+                        }
+
+                        String message = parts[2];
+                        if (message.length() != messageLength) {
+
+                        }
+                    }
+                }
+
+//                String word = reader.readLine();
+                queue.add(reader.readLine());
+                out.write(queue.pollFirst());
                 out.flush();
-                String serverWord = in.readLine();
-                System.out.println(serverWord);
+
+                String wordServer = in.readLine();
+                System.out.println("Server sending: " + wordServer);
 
             } finally {
                 System.out.println("The client has been closed...");

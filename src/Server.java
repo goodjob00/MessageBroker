@@ -23,6 +23,8 @@ public class Server {
 
                     String word = in.readLine();
                     System.out.println(word);
+                    out.write("ответ от сервера\n");
+                    out.flush();
                 } finally {
                     clientSocket.close();
                     in.close();
