@@ -1,13 +1,15 @@
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Scanner;
+
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        LinkedList<String> queue = new LinkedList<String>();
+        Scanner scanner = new Scanner(System.in);
 
-        queue.add("Hello world");
-        queue.add("Help please");
-        System.out.println(queue.pollFirst());
-        System.out.println(queue.pollFirst());
+        String[] line;
+        String[] command;
+
     }
 }

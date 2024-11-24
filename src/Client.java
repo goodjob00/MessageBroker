@@ -1,68 +1,37 @@
 import java.io.*;
 import java.net.Socket;
-import java.util.LinkedList;
 
 public class Client {
 
-    private static Socket clientSocket;
-    private static BufferedReader reader;
+    public void connectToServer() {
+        try (Socket socket = new Socket("localhost", 12345)) {
+            System.out.println("Подключение к серверу...");
 
-    private static BufferedReader in;
-    private static BufferedWriter out;
+            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            BufferedWriter output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+            String userInput;
+//            while (true) {
+//                System.out.print("Введите сообщение для сервера (или 'exit' для выхода): ");
+//                userInput = reader.readLine();
+//                if ("exit".equalsIgnoreCase(userInput)) {
+//                    break; // Выход из цикла если пользователь ввел "exit"
+//                }
+//                output.write(userInput);
+//                output.newLine(); // Добавляем перевод строки, чтобы сервер знал, что сообщение окончено
+//                output.flush(); // Сбрасываем буфер
+//
+//                String serverResponse = input.readLine(); // получение ответа от сервера
+//                System.out.println("Ответ от сервера: " + serverResponse);
+//            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) {
-        LinkedList<String> queue = new LinkedList<String>();
-        int bytesRead = 0;
-        String line;
-        try {
-            try {
-                clientSocket = new Socket("localhost", 4004);
-                reader = new BufferedReader(new InputStreamReader(System.in));
 
-                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-
-                System.out.println("Write something that send message: ");
-
-                while ((line = reader.readLine()) != null) {
-                    if (line.startsWith("message ")) {
-                        String[] parts = line.split(" ",3);
-                        if (parts.length < 3) {
-                            System.out.println("Error format messages");
-                            continue;
-                        }
-
-                        int messageLength;
-                        try {
-                            messageLength = Integer.parseInt(parts[1]);
-                        } catch (NumberFormatException e) {
-                            System.out.println("Length of messages must be an INTEGER");
-                            continue;
-                        }
-
-                        String message = parts[2];
-                        if (message.length() != messageLength) {
-
-                        }
-                    }
-                }
-
-//                String word = reader.readLine();
-                queue.add(reader.readLine());
-                out.write(queue.pollFirst());
-                out.flush();
-
-                String wordServer = in.readLine();
-                System.out.println("Server sending: " + wordServer);
-
-            } finally {
-                System.out.println("The client has been closed...");
-                clientSocket.close();
-                in.close();
-                out.close();
-            }
-        } catch (IOException e) {
-            System.out.println(e);
-        }
     }
 }
