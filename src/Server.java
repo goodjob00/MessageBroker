@@ -10,9 +10,9 @@ public class Server {
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("клиен подключён " + clientSocket.getInetAddress());
+                System.out.println("клиен подключён " + clientSocket.toString());
 
-                new ClientThread(clientSocket).start();
+//                new ClientThread(clientSocket).start();
             }
         } catch (IOException e) {
             e.printStackTrace();

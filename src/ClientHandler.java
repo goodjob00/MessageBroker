@@ -45,13 +45,6 @@ public class ClientHandler {
                     }
                 } while (line[0].equals("quit"));
 
-
-//                String messageToClient = reader.readLine();
-//                out.write(messageToClient + "\n");
-//                out.flush();
-//                String wordServer = in.readLine();
-//                System.out.println("Server sending: " + wordServer);
-
             } finally {
                 System.out.println("The client has been closed...");
 //                clientSocket.close();

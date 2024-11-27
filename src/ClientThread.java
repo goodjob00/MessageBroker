@@ -1,12 +1,17 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.HashMap;
 
 public class ClientThread extends Thread {
     private Socket clientSocket;
+    private HashMap queue;
 
-    public ClientThread(Socket socket) {
+    public ClientThread(Socket socket, HashMap queue) {
         this.clientSocket = socket;
+        this.queue = queue;
     }
+
+
 
     @Override
     public void run() {
@@ -14,7 +19,7 @@ public class ClientThread extends Thread {
             BufferedWriter output = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()))) {
 
             String clientMessage;
-
+            System.out.println("Socket in thread: " + clientSocket);
             while ((clientMessage = input.readLine()) != null) {
                 System.out.println("Получено от клиента: " + clientMessage);
                 // Ответ сервером
@@ -34,5 +39,9 @@ public class ClientThread extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+
+    public HashMap getQueue() {
+        return queue;
     }
 }
