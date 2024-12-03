@@ -1,5 +1,3 @@
-import com.sun.source.tree.WhileLoopTree;
-
 import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.BlockingDeque;
@@ -27,7 +25,7 @@ public class ClientHandler implements Runnable {
     }
 
     public static String getQueue(String key) {
-        return queue.get(key).pollFirst();
+            return queue.get(key).pollFirst();
     }
 
     public ClientHandler(Socket socket, ConcurrentHashMap<String, BlockingDeque<String>> queue) {
@@ -35,31 +33,39 @@ public class ClientHandler implements Runnable {
         this.queue = queue;
     }
 
+    static boolean flag = true;
+
     public void run() {
+        BufferedReader input = null;
         try {
-            System.out.println(socket.getInetAddress());
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-
-            String[] message = input.readLine().replace("\\n", "\n").split("\n");
-            String[] command = message[0].split(" ");
-            String nameQueue = "";
-            int bytesRead = 0;
-
-            if (command[0].equals("receive")) {
-                System.out.println("Получение сообщения из очереди: ");
-                while (true) {
-                    output.println(getQueue(command[1]));
+            while (true) {
+                if (flag)
+                    input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter output = new PrintWriter(socket.getOutputStream());
+                System.out.println(flag);
+                String[] message = input.readLine().replace("\\n", "\n").split("\n");
+                String[] command = message[0].split(" ");
+                String nameQueue = "";
+                int bytesRead = 0;
+                if (command[0].equals("receive")) {
+                    flag = false;
+                    while (true) {
+                        output.println(getQueue(command[1]) + queue);
+                        output.flush();
+                    }
+                } else if (command[0].equals("send")) {
+                    setNameQueue(command[1]);
+                } else if (command[0].equals("message")) {
+                    output.println("add the element at queue: " + "masage");
+                    System.out.println("done");
+                    setQueue("test", "message[1]");
+                    output.flush();
+                } else {
+                    output.println("Введите верный формат [command] [queue]");
                     output.flush();
                 }
-            } else if (command[0].equals("send")) {
-                setNameQueue(command[1]);
-            } else if (command[0].equals("message")) {
-                output.println("add the element at queue: " + "masage");
-                System.out.println("done");
-                setQueue("test", "message[1]");
-                output.flush();
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
