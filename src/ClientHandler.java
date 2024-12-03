@@ -6,11 +6,13 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 
 public class ClientHandler implements Runnable {
+
     private Socket socket;
     private static ConcurrentHashMap<String, BlockingDeque<String>> queue;
 
     public static synchronized void setNameQueue(String key) {
         queue.computeIfAbsent(key, k -> new LinkedBlockingDeque<>());
+        System.out.println("Добавление в очередь ключа " + key);
     }
 
     public static void setQueue(String key, String message) {
@@ -25,7 +27,13 @@ public class ClientHandler implements Runnable {
     }
 
     public static String getQueue(String key) {
-            return queue.get(key).pollFirst();
+        String value = null;
+        try {
+            value = queue.get(key).pollFirst();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        return value;
     }
 
     public ClientHandler(Socket socket, ConcurrentHashMap<String, BlockingDeque<String>> queue) {
@@ -33,33 +41,39 @@ public class ClientHandler implements Runnable {
         this.queue = queue;
     }
 
-    static boolean flag = true;
-
     public void run() {
         BufferedReader input = null;
         try {
+            String nameQueue = "";
             while (true) {
-                if (flag)
-                    input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                PrintWriter output = new PrintWriter(socket.getOutputStream());
-                System.out.println(flag);
+                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
                 String[] message = input.readLine().replace("\\n", "\n").split("\n");
                 String[] command = message[0].split(" ");
-                String nameQueue = "";
-                int bytesRead = 0;
+
                 if (command[0].equals("receive")) {
-                    flag = false;
                     while (true) {
-                        output.println(getQueue(command[1]) + queue);
-                        output.flush();
+                        while (!queue.get(command[1]).isEmpty()) {
+                            output.println(getQueue(command[1]));
+                            output.flush();
+                        }
                     }
                 } else if (command[0].equals("send")) {
+                    nameQueue = command[1];
                     setNameQueue(command[1]);
-                } else if (command[0].equals("message")) {
-                    output.println("add the element at queue: " + "masage");
-                    System.out.println("done");
-                    setQueue("test", "message[1]");
+
+                    output.println("Добавлена очередь с именем " + command[1]);
                     output.flush();
+                } else if (command[0].equals("message")) {
+                    if (message[1].length() == Integer.parseInt(command[1])) {
+                        setQueue(nameQueue, message[1]);
+
+                        output.println("add the element to queue: " + command[1]);
+                        output.flush();
+                    } else {
+                        output.println("Неверное количество байт");
+                        output.flush();
+                    }
                 } else {
                     output.println("Введите верный формат [command] [queue]");
                     output.flush();
@@ -69,6 +83,5 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }
