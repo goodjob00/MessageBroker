@@ -8,14 +8,19 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class ClientHandler implements Runnable {
 
     private Socket socket;
-    private static ConcurrentHashMap<String, BlockingDeque<String>> queue;
+    private ConcurrentHashMap<String, BlockingDeque<String>> queue;
 
-    public static synchronized void setNameQueue(String key) {
+    static {
+
+    }
+
+    public synchronized void setNameQueue(String key) {
+
         queue.computeIfAbsent(key, k -> new LinkedBlockingDeque<>());
         System.out.println("Добавление в очередь ключа " + key);
     }
 
-    public static void setQueue(String key, String message) {
+    public void setQueue(String key, String message) {
         BlockingDeque<String> deque = queue.get(key);
         try {
             deque.put(message);
@@ -26,11 +31,11 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    public static String getQueue(String key) {
+    public String getQueue(String key) {
         String value = null;
         try {
-            value = queue.get(key).pollFirst();
-        } catch (NullPointerException e) {
+            value = queue.get(key).takeFirst();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return value;
@@ -62,10 +67,8 @@ public class ClientHandler implements Runnable {
                         output.flush();
 
                         while (true) {
-                            while (!queue.get(command[1]).isEmpty()) {
-                                output.println(getQueue(command[1]));
-                                output.flush();
-                            }
+                            output.println(getQueue(command[1]));
+                            output.flush();
                         }
                     }
                 } else if (command[0].equals("send")) {

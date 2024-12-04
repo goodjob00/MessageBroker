@@ -6,9 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Server {
-    public static volatile ConcurrentHashMap<String, BlockingDeque<String>> queue = new ConcurrentHashMap<>();
-
     public static void main(String[] args) {
+        ConcurrentHashMap<String, BlockingDeque<String>> queue = new ConcurrentHashMap<>();
         try (ServerSocket serverSocket = new ServerSocket(12345)) {
             System.out.println("Сервер запущен. Ожидание подключения...");
             while (true) {
