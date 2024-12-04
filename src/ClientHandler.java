@@ -52,10 +52,20 @@ public class ClientHandler implements Runnable {
                 String[] command = message[0].split(" ");
 
                 if (command[0].equals("receive")) {
-                    while (true) {
-                        while (!queue.get(command[1]).isEmpty()) {
-                            output.println(getQueue(command[1]));
-                            output.flush();
+                    if (queue.get(command[1]) == null) {
+                        output.println("Очереди с именем " + command[1] + " не существует!!!");
+                        output.flush();
+                    } else {
+                        output.println(true);
+                        output.flush();
+                        output.println("Вы успешно присоединились к очереди " + command[1]);
+                        output.flush();
+
+                        while (true) {
+                            while (!queue.get(command[1]).isEmpty()) {
+                                output.println(getQueue(command[1]));
+                                output.flush();
+                            }
                         }
                     }
                 } else if (command[0].equals("send")) {
@@ -68,7 +78,7 @@ public class ClientHandler implements Runnable {
                     if (message[1].length() == Integer.parseInt(command[1])) {
                         setQueue(nameQueue, message[1]);
 
-                        output.println("add the element to queue: " + command[1]);
+                        output.println("Add the element to queue: " + command[1]);
                         output.flush();
                     } else {
                         output.println("Неверное количество байт");

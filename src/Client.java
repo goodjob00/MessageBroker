@@ -16,10 +16,10 @@ public class Client {
                 if (flag) {
                     userInput = reader.readLine();
                     output.println(userInput);
-                    if (userInput.split(" ")[0].equals("receive")) flag = false;
                 }
                 String serverResponse = input.readLine();
-                System.out.println("Ответ от сервера: " + serverResponse);
+                if (Boolean.parseBoolean(serverResponse)) flag = false;
+                if (!serverResponse.equals("null")) System.out.println("Ответ от сервера: " + serverResponse);
             }
         } catch (IOException e) {
             e.printStackTrace();
