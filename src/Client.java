@@ -19,7 +19,7 @@ public class Client {
                 }
                 String serverResponse = input.readLine();
                 if (Boolean.parseBoolean(serverResponse)) flag = false;
-                if (!serverResponse.equals("null")) System.out.println("Ответ от сервера: " + serverResponse);
+                System.out.println("Ответ от сервера: " + serverResponse);
             }
         } catch (IOException e) {
             e.printStackTrace();

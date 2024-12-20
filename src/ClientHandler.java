@@ -10,12 +10,7 @@ public class ClientHandler implements Runnable {
     private Socket socket;
     private ConcurrentHashMap<String, BlockingDeque<String>> queue;
 
-    static {
-
-    }
-
     public synchronized void setNameQueue(String key) {
-
         queue.computeIfAbsent(key, k -> new LinkedBlockingDeque<>());
         System.out.println("Добавление в очередь ключа " + key);
     }
@@ -57,25 +52,19 @@ public class ClientHandler implements Runnable {
                 String[] command = message[0].split(" ");
 
                 if (command[0].equals("receive")) {
-                    if (queue.get(command[1]) == null) {
-                        output.println("Очереди с именем " + command[1] + " не существует!!!");
-                        output.flush();
-                    } else {
-                        output.println(true);
-                        output.flush();
-                        output.println("Вы успешно присоединились к очереди " + command[1]);
-                        output.flush();
+                    setNameQueue(command[1]);
+                    output.println(true);
+                    output.flush();
+                    output.println("Вы успешно присоединились к очереди " + command[1]);
+                    output.flush();
 
-                        while (true) {
-                            output.println(getQueue(command[1]));
-                            output.flush();
-                        }
+                    while (true) {
+                        output.println(getQueue(command[1]));
+                        output.flush();
                     }
                 } else if (command[0].equals("send")) {
                     nameQueue = command[1];
-                    setNameQueue(command[1]);
-
-                    output.println("Добавлена очередь с именем " + command[1]);
+                    output.println("Присоединение к очереди в качестве отправителя: " + command[1]);
                     output.flush();
                 } else if (command[0].equals("message")) {
                     if (message[1].length() == Integer.parseInt(command[1])) {
