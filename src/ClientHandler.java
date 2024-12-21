@@ -10,12 +10,12 @@ public class ClientHandler implements Runnable {
     private Socket socket;
     private ConcurrentHashMap<String, BlockingDeque<String>> queue;
 
-    public synchronized void setNameQueue(String key) {
+    private synchronized void setNameQueue(String key) {
         queue.computeIfAbsent(key, k -> new LinkedBlockingDeque<>());
         System.out.println("Добавление в очередь ключа " + key);
     }
 
-    public void setQueue(String key, String message) {
+    private void setQueue(String key, String message) {
         BlockingDeque<String> deque = queue.get(key);
         try {
             deque.put(message);
@@ -26,7 +26,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    public String getQueue(String key) {
+    private String getQueue(String key) {
         String value = null;
         try {
             value = queue.get(key).takeFirst();
@@ -39,6 +39,19 @@ public class ClientHandler implements Runnable {
     public ClientHandler(Socket socket, ConcurrentHashMap<String, BlockingDeque<String>> queue) {
         this.socket = socket;
         this.queue = queue;
+    }
+
+    private void scanQueue(BlockingDeque<String> queue) {
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(500);
+                    System.out.println("LOL");
+                } catch (InterruptedException e) {
+                    System.out.println(e);
+                }
+            }
+        });
     }
 
     public void run() {
@@ -59,6 +72,8 @@ public class ClientHandler implements Runnable {
                     output.flush();
 
                     while (true) {
+//                        if (getQueue(command[1]) == null) socket.close();
+                        System.out.println("fd");
                         output.println(getQueue(command[1]));
                         output.flush();
                     }
