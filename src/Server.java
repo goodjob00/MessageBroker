@@ -9,15 +9,14 @@ public class Server {
     public static void main(String[] args) {
         ConcurrentHashMap<String, BlockingDeque<String>> queue = new ConcurrentHashMap<>();
 
-
         try (ServerSocket serverSocket = new ServerSocket(12345)) {
+            QueueHandler queueHandler = new QueueHandler(queue);
             System.out.println("Сервер запущен. Ожидание подключения...");
             while (true) {
                 Socket clientSocket = serverSocket.accept();
 
-                new Thread(new ClientHandler(clientSocket, queue)).start();
+                new Thread(new ClientHandler(clientSocket, queueHandler)).start();
                 System.out.println("Клиент подключен " + clientSocket.toString());
-
             }
         } catch (IOException e) {
             e.printStackTrace();
