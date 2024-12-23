@@ -16,7 +16,7 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             String nameQueue = "";
-            while (queue.isConnectClient(socket)) {
+            while (true) {
                 System.out.println(queue.isConnectClient(socket));
                 BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
@@ -32,9 +32,15 @@ public class ClientHandler implements Runnable {
                     output.println("Вы успешно присоединились к очереди " + command[1]);
                     output.flush();
 
-                    while (queue.isConnectClient(socket)) {
+                    while (true) {
+                        System.out.println("отправка сообщения receive");
                         output.println(queue.getQueue(command[1]));
                         output.flush();
+
+                        if (output.checkError()) {
+                            throw new IOException();
+                        }
+                        System.out.println("после flush");
                     }
                 } else if (command[0].equals("send")) {
                     nameQueue = command[1];
@@ -63,6 +69,7 @@ public class ClientHandler implements Runnable {
                 }
             }
         } catch (IOException e) {
+            System.out.println("test");
             e.printStackTrace();
         }
     }
