@@ -5,12 +5,14 @@ import java.util.concurrent.BlockingDeque;
 
 
 public class ClientHandler implements Runnable {
-    private Socket socket;
-    private QueueHandler queue;
+    private final Socket socket;
+    private final QueueHandler queue;
+    private final TerminalHandler terminal;
 
     public ClientHandler(Socket socket, QueueHandler queue) {
         this.socket = socket;
         this.queue = queue;
+        this.terminal = new TerminalHandler(socket);
     }
 
     public void run() {
@@ -18,9 +20,11 @@ public class ClientHandler implements Runnable {
             String nameQueue = "";
             while (true) {
                 System.out.println(queue.isConnectClient(socket));
-                BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//                BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                String input = terminal.getMessage();
                 PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-                String[] message = input.readLine().replace("\\n", "\n").split("\n");
+//                String[] message = input.readLine().replace("\\n", "\n").split("\n");
+                String[] message = input.replace("\\n", "\n").split("\n");
                 String[] command = message[0].split(" ");
                 if (command[0].equals("##")) {
                     output.println("Завершение работы...");
@@ -29,8 +33,9 @@ public class ClientHandler implements Runnable {
                 }
                 if (command[0].equals("receive")) {
                     queue.setNameQueue(command[1], socket);
-                    output.println("Вы успешно присоединились к очереди " + command[1]);
-                    output.flush();
+                    terminal.sendMessage("Вы успешно присоединились к очереди " + command[1]);
+//                    output.println("Вы успешно присоединились к очереди " + command[1]);
+//                    output.flush();
 
                     while (true) {
                         System.out.println("отправка сообщения receive");

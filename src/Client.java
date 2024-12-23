@@ -22,7 +22,7 @@ public class Client {
                             output.println(200);
                             output.flush();
                         } else {
-                            System.out.println("Ответ от сервера " + serverResponse);
+                            System.out.println(serverResponse);
                         }
                     }
                 } catch (IOException e) {
