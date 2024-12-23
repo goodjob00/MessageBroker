@@ -1,5 +1,3 @@
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,43 +9,40 @@ import java.util.concurrent.LinkedBlockingDeque;
 //Класс обработки очередей
 public class QueueHandler {
     public final ConcurrentHashMap<String, BlockingDeque<String>> queue;
-    public ConcurrentHashMap<String, List<Socket>> connectClients = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, List<Socket>> connectClients = new ConcurrentHashMap<>();
 
     public QueueHandler(ConcurrentHashMap<String, BlockingDeque<String>> queue) {
         this.queue = queue;
         this.removeIfAbsent();
     }
 
-    public synchronized void setNameQueue(String key, Socket socket) {
+    public synchronized void setKeyQueue(String key, Socket socket) {
         queue.computeIfAbsent(key, k -> new LinkedBlockingDeque<>());
         connectClients.computeIfAbsent(key, k -> new ArrayList<>()).add(socket);
-        System.out.println(connectClients);
-        System.out.println("Добавление в очередь ключа " + key);
     }
 
-    public void setQueue(String key, String message) {
 
+    public void setQueue(String key, String message) {
         BlockingDeque<String> deque = queue.get(key);
         try {
-            try {
-                deque.put(message);
-                System.out.println("Элемент добавлен в очередь по ключу " + key + ": " + message);
-            } catch (NullPointerException e) {
-                System.out.println("Такой очереди больше не существует");
-            }
+            deque.put(message);
+            System.out.println("Элемент добавлен в очередь по ключу " + key + ": " + message);
         } catch (InterruptedException e) {
             System.out.println("Ошибка при добавлении значения к очереди");
         }
     }
 
-    public String getQueue(String key) {
+    public String getQueue(String key, Socket socket) {
         String value = null;
-        try {
-            value = queue.get(key).takeFirst();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (TerminalHandler.isConnectClient(socket)) {
+            try {
+                value = queue.get(key).takeFirst();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return value;
+
     }
 
     //Метод проверки очереди на пустоту
@@ -58,7 +53,7 @@ public class QueueHandler {
                 for (String key : connectClients.keySet()) {
                     List<Socket> copyOfListSockets = new ArrayList<>(connectClients.get(key));
                     for (Socket socket : copyOfListSockets) {
-                        if (!isConnectClient(socket)) connectClients.get(key).remove(socket);
+                        if (!TerminalHandler.isConnectClient(socket)) connectClients.get(key).remove(socket);
                     }
                     if (connectClients.get(key).isEmpty()) {
                         connectClients.remove(key);
@@ -72,22 +67,5 @@ public class QueueHandler {
                 }
             }
         }).start();
-    }
-
-    public synchronized boolean isConnectClient(Socket socket) {
-        return socket.isConnected();
-//        try {
-//            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-//
-//            output.println("test");
-//            output.flush();
-//
-//            if (output.checkError()) {
-//                throw new IOException("Ошибка записи в поток.");
-//            }
-//            return true;
-//        } catch (IOException e) {
-//            return false;
-//        }
     }
 }

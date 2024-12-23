@@ -1,9 +1,7 @@
-import java.io.*;
 import java.net.Socket;
-import java.util.Map;
-import java.util.concurrent.BlockingDeque;
 
 
+//Класс принимает клиента в отдельный поток и обрабатывает его
 public class ClientHandler implements Runnable {
     private final Socket socket;
     private final QueueHandler queue;
@@ -16,66 +14,37 @@ public class ClientHandler implements Runnable {
     }
 
     public void run() {
-        try {
-            String nameQueue = "";
-            while (true) {
-                System.out.println(queue.isConnectClient(socket));
-//                BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        String nameQueue = "";
+        while (terminal.isConnectClient()) {
+            try {
                 String input = terminal.getMessage();
-                PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-//                String[] message = input.readLine().replace("\\n", "\n").split("\n");
                 String[] message = input.replace("\\n", "\n").split("\n");
                 String[] command = message[0].split(" ");
-                if (command[0].equals("##")) {
-                    output.println("Завершение работы...");
-                    output.flush();
-                    return;
-                }
                 if (command[0].equals("receive")) {
-                    queue.setNameQueue(command[1], socket);
+                    queue.setKeyQueue(command[1], socket);
                     terminal.sendMessage("Вы успешно присоединились к очереди " + command[1]);
-//                    output.println("Вы успешно присоединились к очереди " + command[1]);
-//                    output.flush();
 
-                    while (true) {
-                        System.out.println("отправка сообщения receive");
-                        output.println(queue.getQueue(command[1]));
-                        output.flush();
-
-                        if (output.checkError()) {
-                            throw new IOException();
-                        }
-                        System.out.println("после flush");
+                    while (terminal.isConnectClient()) {
+                        terminal.sendMessage(queue.getQueue(command[1], socket));
                     }
                 } else if (command[0].equals("send")) {
                     nameQueue = command[1];
-                    output.println("Присоединение к очереди в качестве отправителя: " + command[1]);
-                    output.flush();
+                    queue.setKeyQueue(command[1], socket);
+                    terminal.sendMessage("Присоединение к очереди в качестве отправителя: " + command[1]);
                 } else if (command[0].equals("message")) {
                     if (message[1].length() == Integer.parseInt(command[1])) {
                         queue.setQueue(nameQueue, message[1]);
-
-                        output.println("Add the element to queue: " + command[1]);
-                        output.flush();
+                        terminal.sendMessage("Добавленение элемента в очередь " + command[1]);
                     } else {
-                        output.println("Неверное количество байт");
-                        output.flush();
+                        terminal.sendMessage("Неверное количество байт");
                     }
-                } else if (command[0].equals("get")) {
-                    System.out.println(queue);
-                    for (Map.Entry<String, BlockingDeque<String>> i : queue.queue.entrySet()) {
-                        System.out.println(queue.queue.get(i));
-                    }
-                    output.println("command accepted");
-                    output.flush();
                 } else {
-                    output.println("Введите верный формат [command] [queue]");
-                    output.flush();
+                    terminal.sendMessage("Введите верный формат [command] [queue]",
+                            "Не поддерживается данный формат сообщений");
                 }
+            } catch (Exception e) {
+                terminal.sendMessage("Не удалось выполнить действие", e.toString());
             }
-        } catch (IOException e) {
-            System.out.println("test");
-            e.printStackTrace();
         }
     }
 }
